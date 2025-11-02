@@ -1,0 +1,7 @@
+.idea
+.DS_Store
+/build/
+/cmake-build-debug/
+
+# Shared memory (Linux)
+/dev/shm/process_counter_shm
