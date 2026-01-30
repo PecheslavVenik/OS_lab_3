@@ -28,10 +28,10 @@
 #define LEADER_LOCK_FILE "leader.lock"
 
 #ifdef _WIN32
-#define SHM_NAME "Global\\CrossPlatformCounter"
-#define MUTEX_COUNTER_NAME "Global\\CounterMutex"
-#define MUTEX_LOG_NAME "Global\\LogMutex"
-#define MUTEX_LEADER_NAME "Global\\LeaderMutex"
+#define SHM_NAME "Local\\CrossPlatformCounter"
+#define MUTEX_COUNTER_NAME "Local\\CounterMutex"
+#define MUTEX_LOG_NAME "Local\\LogMutex"
+#define MUTEX_LEADER_NAME "Local\\LeaderMutex"
 #else
 #define SHM_NAME "/cross_platform_counter_shm"
 #endif
@@ -421,7 +421,11 @@ void handle_exit(int sig) { g_running = false; }
 void init_shm() {
 #ifdef _WIN32
     hMap = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SharedArea), SHM_NAME);
-    if (!hMap) { fprintf(stderr, "CreateFileMapping error\n"); exit(1); }
+    if (!hMap) { 
+        DWORD err = GetLastError();
+        fprintf(stderr, "CreateFileMapping error: %lu\n", err); 
+        exit(1); 
+    }
     bool is_new = (GetLastError() != ERROR_ALREADY_EXISTS);
     g_area = (SharedArea*)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(SharedArea));
     if (!g_area) { fprintf(stderr, "MapViewOfFile error\n"); exit(1); }
