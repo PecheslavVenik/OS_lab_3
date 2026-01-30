@@ -24,45 +24,49 @@ if %errorlevel% neq 0 (
 
 echo.
 echo Checking for MinGW/GCC...
+
+REM Check if GCC is already in PATH
 where gcc >nul 2>nul
-if %errorlevel% neq 0 (
-    echo GCC not found in PATH. Searching in common locations...
-    
-    if exist "C:\msys64\mingw64\bin\gcc.exe" (
-        echo Found MinGW at: C:\msys64\mingw64\bin
-        set "PATH=C:\msys64\mingw64\bin;%PATH%"
-        goto mingw_found
-    )
-    
-    if exist "C:\mingw64\bin\gcc.exe" (
-        echo Found MinGW at: C:\mingw64\bin
-        set "PATH=C:\mingw64\bin;%PATH%"
-        goto mingw_found
-    )
-    
-    if exist "C:\MinGW\bin\gcc.exe" (
-        echo Found MinGW at: C:\MinGW\bin
-        set "PATH=C:\MinGW\bin;%PATH%"
-        goto mingw_found
-    )
-    
-    if exist "%LOCALAPPDATA%\Programs\CLion\bin\mingw\bin\gcc.exe" (
-        echo Found MinGW at: %LOCALAPPDATA%\Programs\CLion\bin\mingw\bin
-        set "PATH=%LOCALAPPDATA%\Programs\CLion\bin\mingw\bin;%PATH%"
-        goto mingw_found
-    )
-    
-    echo ERROR: MinGW not found. Please:
-    echo 1. Install MinGW or MSYS2
-    echo 2. Add gcc.exe to PATH
-    echo 3. Or build from CLion IDE directly
-    exit /b 1
-    
-    :mingw_found
-) else (
+if %errorlevel% equ 0 (
     echo GCC found in PATH
+    goto git_pull
 )
 
+echo GCC not found in PATH. Searching in common locations...
+
+REM Check common locations
+if exist "C:\msys64\mingw64\bin\gcc.exe" (
+    echo Found MinGW at: C:\msys64\mingw64\bin
+    set "PATH=C:\msys64\mingw64\bin;%PATH%"
+    goto git_pull
+)
+
+if exist "C:\mingw64\bin\gcc.exe" (
+    echo Found MinGW at: C:\mingw64\bin
+    set "PATH=C:\mingw64\bin;%PATH%"
+    goto git_pull
+)
+
+if exist "C:\MinGW\bin\gcc.exe" (
+    echo Found MinGW at: C:\MinGW\bin
+    set "PATH=C:\MinGW\bin;%PATH%"
+    goto git_pull
+)
+
+REM Check CLion bundled MinGW
+if exist "%LOCALAPPDATA%\Programs\CLion\bin\mingw\bin\gcc.exe" (
+    echo Found MinGW at: %LOCALAPPDATA%\Programs\CLion\bin\mingw\bin
+    set "PATH=%LOCALAPPDATA%\Programs\CLion\bin\mingw\bin;%PATH%"
+    goto git_pull
+)
+
+echo ERROR: MinGW not found. Please:
+echo 1. Install MinGW or MSYS2
+echo 2. Add gcc.exe to PATH
+echo 3. Or build from CLion IDE directly
+exit /b 1
+
+:git_pull
 echo.
 echo Pulling from git repository...
 git pull origin main
