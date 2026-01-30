@@ -73,7 +73,9 @@ void sleep_ms(long ms) {
 // --- LOCALE ---
 void setup_locale() {
 #ifdef _WIN32
-    setlocale(LC_ALL, "Russian");
+    SetConsoleOutputCP(65001); // UTF-8
+    SetConsoleCP(65001);       // UTF-8
+    setlocale(LC_ALL, ".UTF8");
 #else
     setlocale(LC_ALL, "ru_RU.UTF-8");
 #endif
