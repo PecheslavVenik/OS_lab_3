@@ -1,42 +1,108 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM --- Сборка ---
-echo Компилирую...
-if exist program.exe del program.exe
-cl.exe /EHsc /Fe:program.exe main.cpp
+echo ========================================
+echo СКРИПТ_ДЛЯ_ШИНДОУС.cmd
+echo ========================================
 
-REM --- Очистка общих ресурсов ---
-echo Очищаю логи и общую память...
-if exist program.log del program.log
+set MODE=%1
+if "%MODE%"=="" set MODE=build
+set COUNT=%2
+if "%COUNT%"=="" set COUNT=1
 
-REM Очистить shared memory вручную не требуется — Windows удаляет Global\* когда нет процессов.
+where git >nul 2>nul
+if %errorlevel% neq 0 (
+    echo Гит не установлен
+    exit /b 1
+)
 
-REM --- Запуск ---
-set /p INSTANCES=Сколько процессов всего запустить (1 — только лидер)? (по умолчанию 3):
-if "%INSTANCES%"=="" set INSTANCES=3
+where cmake >nul 2>nul
+if %errorlevel% neq 0 (
+    echo Симейк не установлен
+    exit /b 1
+)
 
-set /a N=%INSTANCES%
-if "%N%"=="1" (
-    echo Запуск интерактивного ЛИДЕРА...
-    program.exe
-) else (
-    set FOLLOWERS=
-    REM Запускаем followers
+echo.
+echo Пулл из гит репозитория...
+git pull origin main
+if %errorlevel% neq 0 (
+    echo Нет интернета или ошибка гита.
+    echo Продолжаем так ладно
+)
+
+if /I "%MODE%"=="clean" (
+    call :clean
+    pause
+    exit /b 0
+)
+
+call :build
+if /I "%MODE%"=="run" (
+    call :run %COUNT%
+)
+
+pause
+exit /b 0
+
+:build
+if not exist build (
+    mkdir build
+)
+
+cd build
+
+echo.
+echo Симейк конфигуринг проджект...
+cmake .. -G "MinGW Makefiles"
+if %errorlevel% neq 0 (
+    echo Симейк конфигуринг провален
+    cd ..
+    exit /b 1
+)
+
+echo.
+echo Сборка...
+cmake --build . --config Debug
+if %errorlevel% neq 0 (
+    echo Сборка провалена
+    cd ..
+    exit /b 1
+)
+
+cd ..
+
+echo.
+echo ========================================
+echo Биллд завершен успешно!
+echo Exе: build\lab3.exe
+echo ========================================
+exit /b 0
+
+:clean
+del /q program.log 2>nul
+del /q leader.lock 2>nul
+echo Очищены логи
+exit /b 0
+
+:run
+set /a N=%1
+if "%N%"=="" set /a N=1
+if %N% lss 1 set /a N=1
+
+call :clean
+
+if %N% gtr 1 (
     for /l %%i in (2,1,%N%) do (
-        start "Follower %%i" /min program.exe follower
-        REM Нет способа получить PID сразу — просто запускаем процессы по названию.
-        REM Можно убить все потом по названию позже.
+        start "Follower %%i" /min build\lab3.exe follower
         timeout /t 1 >nul
     )
-    echo Запуск интерактивного ЛИДЕРА...
-    program.exe
-    echo Лидер завершён! Завершаю всех followers...
-    REM Закрываем процессы по названию окна
+)
+
+build\lab3.exe
+
+if %N% gtr 1 (
     for /l %%i in (2,1,%N%) do (
         taskkill /FI "WINDOWTITLE eq Follower %%i" /F 2>nul
     )
-    echo Готово!
 )
-
-endlocal
+exit /b 0
