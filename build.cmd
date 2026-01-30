@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
 echo ========================================
 echo СКРИПТ_ДЛЯ_ШИНДОУС.cmd
