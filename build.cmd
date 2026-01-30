@@ -28,18 +28,34 @@ where gcc >nul 2>nul
 if %errorlevel% neq 0 (
     echo GCC not found in PATH. Searching in common locations...
     
-    set "MINGW_PATHS=C:\msys64\mingw64\bin;C:\mingw64\bin;C:\MinGW\bin;%LOCALAPPDATA%\Programs\CLion\bin\mingw\bin"
-    
-    for %%p in (%MINGW_PATHS:;= %) do (
-        if exist "%%p\gcc.exe" (
-            echo Found MinGW at: %%p
-            set "PATH=%%p;%PATH%"
-            goto mingw_found
-        )
+    if exist "C:\msys64\mingw64\bin\gcc.exe" (
+        echo Found MinGW at: C:\msys64\mingw64\bin
+        set "PATH=C:\msys64\mingw64\bin;%PATH%"
+        goto mingw_found
     )
     
-    echo ERROR: MinGW not found. Please install MinGW or add it to PATH.
-    echo Common locations checked: %MINGW_PATHS%
+    if exist "C:\mingw64\bin\gcc.exe" (
+        echo Found MinGW at: C:\mingw64\bin
+        set "PATH=C:\mingw64\bin;%PATH%"
+        goto mingw_found
+    )
+    
+    if exist "C:\MinGW\bin\gcc.exe" (
+        echo Found MinGW at: C:\MinGW\bin
+        set "PATH=C:\MinGW\bin;%PATH%"
+        goto mingw_found
+    )
+    
+    if exist "%LOCALAPPDATA%\Programs\CLion\bin\mingw\bin\gcc.exe" (
+        echo Found MinGW at: %LOCALAPPDATA%\Programs\CLion\bin\mingw\bin
+        set "PATH=%LOCALAPPDATA%\Programs\CLion\bin\mingw\bin;%PATH%"
+        goto mingw_found
+    )
+    
+    echo ERROR: MinGW not found. Please:
+    echo 1. Install MinGW or MSYS2
+    echo 2. Add gcc.exe to PATH
+    echo 3. Or build from CLion IDE directly
     exit /b 1
     
     :mingw_found
