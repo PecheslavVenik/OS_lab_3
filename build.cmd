@@ -23,6 +23,31 @@ if %errorlevel% neq 0 (
 )
 
 echo.
+echo Checking for MinGW/GCC...
+where gcc >nul 2>nul
+if %errorlevel% neq 0 (
+    echo GCC not found in PATH. Searching in common locations...
+    
+    set "MINGW_PATHS=C:\msys64\mingw64\bin;C:\mingw64\bin;C:\MinGW\bin;%LOCALAPPDATA%\Programs\CLion\bin\mingw\bin"
+    
+    for %%p in (%MINGW_PATHS:;= %) do (
+        if exist "%%p\gcc.exe" (
+            echo Found MinGW at: %%p
+            set "PATH=%%p;%PATH%"
+            goto mingw_found
+        )
+    )
+    
+    echo ERROR: MinGW not found. Please install MinGW or add it to PATH.
+    echo Common locations checked: %MINGW_PATHS%
+    exit /b 1
+    
+    :mingw_found
+) else (
+    echo GCC found in PATH
+)
+
+echo.
 echo Pulling from git repository...
 git pull origin main
 if %errorlevel% neq 0 (
@@ -53,16 +78,22 @@ cd build
 
 echo.
 echo Configuring project with CMake...
-cmake ..
+echo Using generator: MinGW Makefiles
+cmake .. -G "MinGW Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
 if %errorlevel% neq 0 (
     echo CMake configuration failed
+    echo.
+    echo Troubleshooting:
+    echo 1. Make sure MinGW is installed
+    echo 2. Check that gcc.exe is in PATH: where gcc
+    echo 3. Or open project in CLion and build from IDE
     cd ..
     exit /b 1
 )
 
 echo.
 echo Building...
-cmake --build . --config Debug
+mingw32-make
 if %errorlevel% neq 0 (
     echo Build failed
     cd ..
