@@ -2,7 +2,7 @@
 setlocal
 
 echo ========================================
-echo СКРИПТ_ДЛЯ_ШИНДОУС.cmd
+echo Lab3 Build Script (Windows)
 echo ========================================
 
 set MODE=%1
@@ -12,22 +12,22 @@ if "%COUNT%"=="" set COUNT=1
 
 where git >nul 2>nul
 if %errorlevel% neq 0 (
-    echo Гит не установлен
+    echo Git is not installed
     exit /b 1
 )
 
 where cmake >nul 2>nul
 if %errorlevel% neq 0 (
-    echo Симейк не установлен
+    echo CMake is not installed
     exit /b 1
 )
 
 echo.
-echo Пулл из гит репозитория...
+echo Pulling from git repository...
 git pull origin main
 if %errorlevel% neq 0 (
-    echo Нет интернета или ошибка гита.
-    echo Продолжаем так ладно
+    echo No internet or git error.
+    echo Continuing anyway
 )
 
 if /I "%MODE%"=="clean" (
@@ -52,19 +52,19 @@ if not exist build (
 cd build
 
 echo.
-echo Симейк конфигуринг проджект...
+echo Configuring project with CMake...
 cmake .. -G "MinGW Makefiles"
 if %errorlevel% neq 0 (
-    echo Симейк конфигуринг провален
+    echo CMake configuration failed
     cd ..
     exit /b 1
 )
 
 echo.
-echo Сборка...
+echo Building...
 cmake --build . --config Debug
 if %errorlevel% neq 0 (
-    echo Сборка провалена
+    echo Build failed
     cd ..
     exit /b 1
 )
@@ -73,15 +73,15 @@ cd ..
 
 echo.
 echo ========================================
-echo Биллд завершен успешно.
-echo Exе: build\lab3.exe
+echo Build completed successfully.
+echo Executable: build\lab3.exe
 echo ========================================
 exit /b 0
 
 :clean
 del /q program.log 2>nul
 del /q leader.lock 2>nul
-echo Очищены логи
+echo Logs cleaned
 exit /b 0
 
 :run
