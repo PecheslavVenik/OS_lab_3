@@ -2,6 +2,8 @@
 .DS_Store
 /build/
 /cmake-build-debug/
+*.lock
+*.log
 
 # Shared memory (Linux)
 /dev/shm/process_counter_shm
