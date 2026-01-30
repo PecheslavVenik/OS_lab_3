@@ -53,7 +53,7 @@ cd build
 
 echo.
 echo Configuring project with CMake...
-cmake .. -G "MinGW Makefiles"
+cmake ..
 if %errorlevel% neq 0 (
     echo CMake configuration failed
     cd ..
